@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import Navigation from "./components/navigation/navigation";
 import Logo from "./components/logo/Logo";
@@ -35,6 +35,20 @@ export default function App() {
   const [box, setBox] = useState({});
   const [route, setRoute] = useState("signIn");
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [user, setUser] = useState({
+    id: "",
+    name: "",
+    email: "",
+    password: "",
+    entries: 0,
+    joined: "",
+  }) ;
+
+  useEffect(() => {
+    fetch("http://localhost:3000/")
+      .then((res) => res.json())
+      .then((data) => console.log(data));
+  }, []);
 
   const calculateFaceLocation = (data) => {
     const clarifaiFace =
@@ -71,18 +85,20 @@ export default function App() {
 
   const onRouteChange = (routeName) => {
     setRoute(routeName);
-    routeName === "home" ? setIsSignedIn(true) : setIsSignedIn(false)
-   
-    
+    routeName === "home" ? setIsSignedIn(true) : setIsSignedIn(false);
   };
 
   return (
     <div className="app">
       <Particles params={particlesOptions} className="particles" />
-      <Navigation onRouteChange={(route) => onRouteChange(route)} isSignedIn={isSignedIn} />
+      <Navigation
+        onRouteChange={(route) => onRouteChange(route)}
+        isSignedIn={isSignedIn}
+      />
       {route === "home" ? (
         <>
           <Logo />
+          <h1>Hello {user.name}</h1>
           <Rank />
           <ImageLinkForm
             onButtonSubmit={onSubmit}
@@ -90,11 +106,11 @@ export default function App() {
           />
           <FaceRecognition imgSrc={imgUrl} box={box} />
         </>
-      ) : ( route === "signIn" ? (
-        <SignIn  onRouteChange={(route) => onRouteChange(route)} />
+      ) : route === "signIn" ? (
+        <SignIn onRouteChange={(route) => onRouteChange(route)} />
       ) : (
-        <Register onRouteChange={(route) => onRouteChange(route)} />
-      ))}
+        <Register loadUser={user => setUser(user)} onRouteChange={(route) => onRouteChange(route)} />
+      )}
     </div>
   );
 }
