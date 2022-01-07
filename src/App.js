@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "./App.css";
 import Navigation from "./components/navigation/navigation";
 import Logo from "./components/logo/Logo";
@@ -42,12 +43,10 @@ export default function App() {
     password: "",
     entries: 0,
     joined: "",
-  }) ;
+  });
 
   useEffect(() => {
-    fetch("http://localhost:3000/")
-      .then((res) => res.json())
-      .then((data) => console.log(data));
+    setImgUrl("");
   }, []);
 
   const calculateFaceLocation = (data) => {
@@ -77,7 +76,22 @@ export default function App() {
     setImgUrl(input);
     app.models
       .predict("a403429f2ddf4b49b307e318f00e528b", input)
-      .then((response) => displayFaceBox(calculateFaceLocation(response)))
+      .then((response) => {
+        if (response) {
+          axios
+            .put("https://radiant-journey-70800.herokuapp.com/image", {
+              id: user.id,
+            })
+            .then((response) => response.data)
+            .then((entries) => {
+              if (entries) {
+                setUser({ ...user, entries });
+              }
+            })
+            .catch(err => console.log(err))
+        }
+        displayFaceBox(calculateFaceLocation(response));
+      })
       .catch((err) => {
         console.log("Clarifai Error:", err);
       });
@@ -86,6 +100,9 @@ export default function App() {
   const onRouteChange = (routeName) => {
     setRoute(routeName);
     routeName === "home" ? setIsSignedIn(true) : setIsSignedIn(false);
+    if (routeName === "signIn") {
+      setImgUrl("");
+    }
   };
 
   return (
@@ -98,8 +115,7 @@ export default function App() {
       {route === "home" ? (
         <>
           <Logo />
-          <h1>Hello {user.name}</h1>
-          <Rank />
+          <Rank rank={user.entries} name={user.name} />
           <ImageLinkForm
             onButtonSubmit={onSubmit}
             onInputChange={onInputChange}
@@ -107,9 +123,15 @@ export default function App() {
           <FaceRecognition imgSrc={imgUrl} box={box} />
         </>
       ) : route === "signIn" ? (
-        <SignIn onRouteChange={(route) => onRouteChange(route)} />
+        <SignIn
+          loadUser={(user) => setUser(user)}
+          onRouteChange={(route) => onRouteChange(route)}
+        />
       ) : (
-        <Register loadUser={user => setUser(user)} onRouteChange={(route) => onRouteChange(route)} />
+        <Register
+          loadUser={(user) => setUser(user)}
+          onRouteChange={(route) => onRouteChange(route)}
+        />
       )}
     </div>
   );

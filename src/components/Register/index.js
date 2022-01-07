@@ -8,7 +8,7 @@ function Register({ onRouteChange, loadUser }) {
 
   const onSubmitRegister = () => {
     axios
-      .post("http://localhost:3000/register", {
+      .post("https://radiant-journey-70800.herokuapp.com/register", {
         name,
         email,
         password,

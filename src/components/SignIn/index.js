@@ -1,18 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-function SignIn({ onRouteChange }) {
+function SignIn({ onRouteChange, loadUser }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const onSubmitSignIn = () => {
     axios
-      .post("http://localhost:3000/signin", {
+      .post("https://radiant-journey-70800.herokuapp.com/signin", {
         email,
         password,
       })
-      .then((response) => {
-        if (response.data === "success") {
+      .then(response => response.data)
+      .then(user => {
+        if (user ) {
+          loadUser(user)
           onRouteChange("home");
         }
       });
